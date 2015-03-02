@@ -2,7 +2,8 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-
+var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -23,19 +24,48 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/',
+app.use(session({
+  secret: 'cookie5',
+  name: 'cookie name',
+  proxy: true,
+  resave: false,
+  saveUninitialized: false
+}));
+
+function restrict(req, res, next){
+  if(req.session.user){
+    next();
+  }else{
+    req.session.error = 'Access Denied !!!';
+    res.redirect('/login');
+  }
+}
+
+
+app.get('/' || '/create',
 function(req, res) {
-  res.render('index');
+  restrict(req, res, function (req, res) {
+    res.render('index');
+  });
+  //res.render('index');
 });
 
-app.get('/create',
-function(req, res) {
-  res.render('index');
-});
+// app.get('/create',
+// function(req, res) {
+//   res.render('index');
+// });
 
 app.get('/login', function (req, res) {
   res.render('login');
 });
+
+app.post('/login', function(req, res){
+  //do thing
+});
+
+app.post('/signup', function(req, res){
+  //do thing
+})
 
 app.get('/signup', function (req, res) {
   res.render('signup');
@@ -43,8 +73,10 @@ app.get('/signup', function (req, res) {
 
 app.get('/links',
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
+  restrict(req, res, function (req, res) {
+    Links.reset().fetch().then(function(links) {
+      res.send(200, links.models);
+    });
   });
 });
 
