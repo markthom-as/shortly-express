@@ -49,7 +49,6 @@ function(req, res) {
   restrict(req, res, function () {
     res.render('index');
   });
-  //res.render('index');
 });
 
 // app.get('/create',
@@ -58,13 +57,17 @@ function(req, res) {
 // });
 
 app.get('/login', function (req, res) {
-  res.render('login');
+    if(req.session.user){
+    res.redirect('/');
+  }else{
+    res.render('login');
+  }
 });
 
 app.post('/login', function(req, res){
   //do thing
   console.log("it's time to log in");
-  new User({user_name: req.body.username})
+  new User({username: req.body.username})
   .fetch()
   .then(function(model) {
     if(model) {
@@ -76,7 +79,7 @@ app.post('/login', function(req, res){
             // they are who they say they are
             // save session
             req.session.regenerate(function(){
-              req.session.user = model.get('user_name');
+              req.session.user = model.get('username');
               res.redirect('/');
             })
           }
@@ -90,7 +93,7 @@ app.post('/login', function(req, res){
 });
 
 app.post('/signup', function(req, res){
-  new User({user_name: req.body.username})
+  new User({username: req.body.username})
     .fetch()
     .then(function(model) {
       if(model) {
@@ -101,7 +104,7 @@ app.post('/signup', function(req, res){
         bcrypt.hash(req.body.password, null, null, function (err, hash) {
           // store id, username, hashed password in database
           // assume bcrypt stores salt for us?
-          new User({user_name: req.body.username, password: hash}, {patch: true}).save().then(console.log("YOU MODEL: ", model));
+          new User({username: req.body.username, password: hash}, {patch: true}).save().then(console.log("YOU MODEL: ", model));
           res.redirect('/login');
           // future work: hard code logging in after this
         });
@@ -110,13 +113,18 @@ app.post('/signup', function(req, res){
 });
 
 app.get('/signup', function (req, res) {
-  res.render('signup');
+  if(req.session.user){
+    res.redirect('/');
+  }else{
+    res.render('signup');
+  }
 });
 
 app.get('/links',
 function(req, res) {
-  restrict(req, res, function (req, res) {
-    Links.reset().fetch().then(function(links) {
+  restrict(req, res, function () {
+    Links.reset().fetch({withRelated: 'user_id'}).then(function(links) {
+      console.log(links);
       res.send(200, links.models);
     });
   });
@@ -144,9 +152,12 @@ function(req, res) {
         var link = new Link({
           url: uri,
           title: title,
+          //user_id: req.session.user, // this doesn't work
           base_url: req.headers.origin
         });
-
+        Users.query({where: {username: req.session.user}}).fetch().then(function(model){
+          link.user_id(model);
+        });
         link.save().then(function(newLink) {
           Links.add(newLink);
           res.send(200, newLink);

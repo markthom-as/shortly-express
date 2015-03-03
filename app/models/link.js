@@ -1,9 +1,11 @@
 var db = require('../config');
 var Click = require('./click');
+var User = require('./user');
 var crypto = require('crypto');
 
 var Link = db.Model.extend({
   tableName: 'urls',
+  // user_id: this.belongsTo(User),
   hasTimestamps: true,
   defaults: {
     visits: 0
@@ -12,7 +14,6 @@ var Link = db.Model.extend({
   user_id: function () {
     return this.belongsTo(User, 'id');
   },
-  //////
   clicks: function() {
     return this.hasMany(Click);
   },

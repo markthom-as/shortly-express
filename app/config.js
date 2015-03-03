@@ -23,6 +23,7 @@ db.knex.schema.hasTable('urls').then(function(exists) {
       link.string('code', 100);
       link.string('title', 255);
       link.integer('visits');
+      link.integer('user_id');
       link.timestamps();
     }).then(function (table) {
       console.log('Created Table', table);
@@ -50,7 +51,7 @@ db.knex.schema.hasTable('users').then(function(exists) {
   if (!exists) {
     db.knex.schema.createTable('users', function (user) {
       user.increments('id').primary();
-      user.string('user_name', 255);
+      user.string('username', 255);
       user.string('password', 255);
       user.string('salt', 255);
     }).then(function (table) {
