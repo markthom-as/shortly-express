@@ -133,6 +133,11 @@ function(req, res) {
   restrict(req, res, function () {
     Links.reset().fetch({withRelated: 'user_id'}).then(function(links) {
       //console.log(links);
+      //we need to filter these linked based upon user id...
+      // only pulling things with a user_id, so everything
+      // for each model
+      //   if model.username === req.body.username
+      //     then add them to whatever we send back
       res.send(200, links.models);
     });
   });
