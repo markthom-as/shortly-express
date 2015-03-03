@@ -4,6 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
+var bluebird = require('bluebird');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -64,8 +65,42 @@ app.post('/login', function(req, res){
 });
 
 app.post('/signup', function(req, res){
-  //do thing
-})
+  console.log("the data: ", req.body); // .body, not .data, because express
+  //
+  // get data from the request. async
+  //
+  // check if username exists
+  //   if yes, redirect whole post to login
+  //   else:
+  //     write id, username, and hashed password to database
+  //     login with the information
+
+  //var userName = req.body.username;
+  // check if user exists
+  //   look up req.body.user in the table
+  //     go through our config.js file
+  //       db.
+  //db.fetch().then(userExists = true);
+
+  new User({user_name: req.body.username})
+    .fetch()
+    .then(function(model) {
+      console.log('asdf;alskfj', model);
+      if(model) {
+        console.log('You already exist  ya dingus');
+        res.redirect('/login');
+      }else{
+        // do stuff
+        bcrypt.hash(req.body.password, null, null, function (err, hash) {
+          // store id, username, hashed password in database
+          // assume bcrypt stores salt for us?
+          new User({user_name: req.body.username, password: hash}, {patch: true}).save().then(console.log("YOU MODEL: ", model));
+          res.redirect('/login');
+          // future work: hard code logging in after this
+        });
+      }
+    });
+});
 
 app.get('/signup', function (req, res) {
   res.render('signup');
