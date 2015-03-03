@@ -120,11 +120,19 @@ app.get('/signup', function (req, res) {
   }
 });
 
+app.get('/logout', function(req, res){
+  req.session.destroy(function(){
+    console.log('session destroyed');
+  });
+  console.log('about to redirect');
+  res.redirect('/login');
+});
+
 app.get('/links',
 function(req, res) {
   restrict(req, res, function () {
     Links.reset().fetch({withRelated: 'user_id'}).then(function(links) {
-      console.log(links);
+      //console.log(links);
       res.send(200, links.models);
     });
   });
