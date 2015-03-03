@@ -26,8 +26,8 @@ app.use(express.static(__dirname + '/public'));
 
 
 app.use(session({
-  secret: 'cookie5',
-  name: 'cookie name',
+  secret: 'cookie5oogabookaloodaloon',
+  cookie: {maxAge: 6000000},
   proxy: true,
   resave: false,
   saveUninitialized: false
@@ -38,6 +38,7 @@ function restrict(req, res, next){
     next();
   }else{
     req.session.error = 'Access Denied !!!';
+    console.log(req.session.error);
     res.redirect('/login');
   }
 }
@@ -45,7 +46,7 @@ function restrict(req, res, next){
 
 app.get('/' || '/create',
 function(req, res) {
-  restrict(req, res, function (req, res) {
+  restrict(req, res, function () {
     res.render('index');
   });
   //res.render('index');
@@ -62,30 +63,36 @@ app.get('/login', function (req, res) {
 
 app.post('/login', function(req, res){
   //do thing
+  console.log("it's time to log in");
+  new User({user_name: req.body.username})
+  .fetch()
+  .then(function(model) {
+    if(model) {
+      bcrypt.compare(req.body.password, model.get('password'), function(error, result){
+        if(error){
+          console.log("ERROR: ", error);
+        }else{
+          if(result){
+            // they are who they say they are
+            // save session
+            req.session.regenerate(function(){
+              req.session.user = model.get('user_name');
+              res.redirect('/');
+            })
+          }
+        }
+      })
+    }else{
+      //redirect if username is not found
+      res.redirect('/signup');
+    }
+  });
 });
 
 app.post('/signup', function(req, res){
-  console.log("the data: ", req.body); // .body, not .data, because express
-  //
-  // get data from the request. async
-  //
-  // check if username exists
-  //   if yes, redirect whole post to login
-  //   else:
-  //     write id, username, and hashed password to database
-  //     login with the information
-
-  //var userName = req.body.username;
-  // check if user exists
-  //   look up req.body.user in the table
-  //     go through our config.js file
-  //       db.
-  //db.fetch().then(userExists = true);
-
   new User({user_name: req.body.username})
     .fetch()
     .then(function(model) {
-      console.log('asdf;alskfj', model);
       if(model) {
         console.log('You already exist  ya dingus');
         res.redirect('/login');
