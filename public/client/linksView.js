@@ -13,6 +13,7 @@ Shortly.LinksView = Backbone.View.extend({
 
   addAll: function(){
     this.collection.forEach(this.addOne, this);
+    this.$el.append(new Shortly.UserView({username : 'bob'}).render().el);
   },
 
   addOne: function(item){

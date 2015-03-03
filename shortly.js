@@ -51,11 +51,6 @@ function(req, res) {
   });
 });
 
-// app.get('/create',
-// function(req, res) {
-//   res.render('index');
-// });
-
 app.get('/login', function (req, res) {
     if(req.session.user){
     res.redirect('/');
@@ -65,8 +60,6 @@ app.get('/login', function (req, res) {
 });
 
 app.post('/login', function(req, res){
-  //do thing
-  console.log("it's time to log in");
   new User({username: req.body.username})
   .fetch()
   .then(function(model) {
@@ -132,13 +125,13 @@ app.get('/links',
 function(req, res) {
   restrict(req, res, function () {
     Links.reset().fetch({withRelated: 'user_id'}).then(function(links) {
-      //console.log(links);
-      //we need to filter these linked based upon user id...
-      // only pulling things with a user_id, so everything
-      // for each model
-      //   if model.username === req.body.username
-      //     then add them to whatever we send back
-      res.send(200, links.models);
+      var matchingLinks = [];
+      links.models.forEach(function(model){
+        if(model.relations.user_id.get('username') === req.session.user){
+          matchingLinks.push(model);
+        }
+      });
+      res.send(200, matchingLinks);
     });
   });
 });
@@ -161,20 +154,19 @@ function(req, res) {
           console.log('Error reading URL heading: ', err);
           return res.send(404);
         }
-
-        var link = new Link({
-          url: uri,
-          title: title,
-          //user_id: req.session.user, // this doesn't work
-          base_url: req.headers.origin
+        Users.query({where: {username: req.session.user}}).fetch().then(function(results){
+            var link = new Link({
+              url: uri,
+              title: title,
+              user_id: results.models[0].attributes.id,
+              base_url: req.headers.origin
+            });
+            // console.dir(link);
+            link.save().then(function(newLink) {
+            Links.add(newLink);
+            res.send(200, newLink);
         });
-        Users.query({where: {username: req.session.user}}).fetch().then(function(model){
-          link.user_id(model);
-        });
-        link.save().then(function(newLink) {
-          Links.add(newLink);
-          res.send(200, newLink);
-        });
+          })
       });
     }
   });

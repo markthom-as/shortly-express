@@ -10,6 +10,7 @@
 </script>
 
 
+
 <script id='link' type='text/x-handlebars-template'>
   <img src='/redirect_icon.png'/>
   <div class='info'>
@@ -20,6 +21,11 @@
   </div>
 </script>
 
+<script id='loggedIn' type='text/x-handlebars-template'>
+  <span class='loggedIn'>
+    Logged in as: {{username}}
+  </span>
+</script>
 
 <script id='create' type='text/x-handlebars-template'>
   <form>
@@ -44,6 +50,8 @@
 <script src='/client/app.js'></script>
 <script src='/client/link.js'></script>
 <script src='/client/links.js'></script>
+<script src='/client/user.js'></script>
+<script src='/client/userView.js'></script>
 <script src='/client/linkView.js'></script>
 <script src='/client/linksView.js'></script>
 <script src='/client/createLinkView.js'></script>

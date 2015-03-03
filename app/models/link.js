@@ -5,15 +5,14 @@ var crypto = require('crypto');
 
 var Link = db.Model.extend({
   tableName: 'urls',
-  // user_id: this.belongsTo(User),
+  user_id: function () {
+    return this.belongsTo(User);
+  },
   hasTimestamps: true,
   defaults: {
     visits: 0
   },
-  // add in user_id connection
-  user_id: function () {
-    return this.belongsTo(User, 'id');
-  },
+
   clicks: function() {
     return this.hasMany(Click);
   },

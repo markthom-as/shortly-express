@@ -137,3 +137,11 @@ form input[type=text], form input[type=password] {
 .creator .message {
   clear: both;
 }
+
+span.loggedIn{
+  font-weight: bold;
+  display: block;
+  float: right;
+  margin-right: 75px;
+  margin-top: 4px;
+}
