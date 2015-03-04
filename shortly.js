@@ -90,16 +90,22 @@ app.post('/signup', function(req, res){
     .fetch()
     .then(function(model) {
       if(model) {
-        console.log('You already exist  ya dingus');
+        console.log('You already exist ya dingus');
         res.redirect('/login');
       }else{
         // do stuff
         bcrypt.hash(req.body.password, null, null, function (err, hash) {
           // store id, username, hashed password in database
           // assume bcrypt stores salt for us?
-          new User({username: req.body.username, password: hash}, {patch: true}).save().then(console.log("YOU MODEL: ", model));
-          res.redirect('/login');
-          // future work: hard code logging in after this
+          new User({username: req.body.username, password: hash}, {patch: true}).save().then(
+            function(model){
+              console.log(model);
+              req.session.regenerate(function(){
+                req.session.user = model.get('username');
+                res.redirect('/');
+              })
+            });
+
         });
       }
     });
@@ -145,7 +151,7 @@ function(req, res) {
     return res.send(404);
   }
 
-  new Link({ url: uri }).fetch().then(function(found) {
+  new Link({ url: uri, user_id: req.session.name }).fetch().then(function(found) {
     if (found) {
       res.send(200, found.attributes);
     } else {
